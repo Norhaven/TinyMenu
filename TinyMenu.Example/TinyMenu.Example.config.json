@@ -1,0 +1,197 @@
+﻿{
+  "shellTypes": [
+    {
+      "id": "cmd",
+      "name": "CMD",
+      "executable": "cmd.exe",
+      "invokeShellArgument": "/C"
+    },
+    {
+      "id": "powershell",
+      "name": "PowerShell",
+      "executable": "pwsh.exe",
+      "invokeShellArgument": "-Command"
+    },
+    {
+      "id": "bash",
+      "name": "Bash",
+      "executable": "bash"
+    }
+  ],
+  "tools": [
+    {
+      "id": "curl",
+      "name": "curl",
+      "command": "curl.exe"
+    },
+    {
+      "id": "kubectl",
+      "name": "kubectl",
+      "command": "kubectl.exe"
+    },
+    {
+      "id": "winget",
+      "name": "WinGet",
+      "command": "winget.exe",
+      "appliesTo": {
+        "type": "appliesToPlatforms",
+        "platforms": [
+          "windows"
+        ]
+      }
+    }
+  ],
+  "environments": [
+    {
+      "id": "windows-debug",
+      "name": "Windows (Debug)",
+      "platform": "windows",
+      "variables": [
+        {
+          "name": "DEBUG",
+          "value": true
+        }
+      ],
+      "shellTypes": [
+        "powershell",
+        "cmd"
+      ]
+    }
+  ],
+  "options": [
+    {
+      "id": "32bit-option",
+      "name": "32 bit",
+      "value": "amd"
+    },
+    {
+      "id": "64bit-option",
+      "name": "64 bit",
+      "value": "amd64"
+    }
+  ],
+  "commands": [
+    {
+      "id": "select-kubectl-client-version",
+      "name": "select-kubectl-client-version",
+      "appliesTo": {
+        "type": "appliesToEnvironments",
+        "environments": [
+          "windows-debug"
+        ]
+      },
+      "action": {
+        "type": "getsUserInput",
+        "prompt": "Enter the kubectl client version to download (e.g. v1.37.0):",
+        "captureAs": "KUBECTL_CLIENT_VERSION"
+      }
+    },
+    {
+      "id": "select-processor-architecture",
+      "name": "select-processor-architecture",
+      "action": {
+        "type": "getsUserInput",
+        "prompt": "Select the processor architecture the client should have:",
+        "captureAs": "PROCESSOR_ARCHITECTURE",
+        "options": [
+          "32bit-option",
+          "64bit-option"
+        ]
+      }
+    },
+    {
+      "id": "install-powershell-if-necessary",
+      "name": "install-powershell-if-necessary",
+      "action": {
+        "type": "usesMultiPlatformCommands",
+        "commands": [
+          {
+            "platform": "windows",
+            "action": {
+              "type": "usesTool",
+              "toolId": "winget",
+              "withArgs": [
+                "install pwsh"
+              ]                
+            }
+          }
+        ]        
+      }
+    },
+    {
+      "id": "download-and-install-kubectl",
+      "name": "download-and-install-kubectl",
+      "appliesTo": {
+        "type": "appliesToEnvironments",
+        "environments": [
+          "windows-debug"
+        ]
+      },
+      "action": {
+        "type": "usesSteps",
+        "steps": [
+          {
+            "action": {
+              "type": "usesCommand",
+              "commandId": "select-kubectl-client-version"
+            }
+          },
+          {
+            "action": {
+              "type": "usesCommand",
+              "commandId": "select-processor-architecture"
+            }
+          },
+          {
+            "action": {
+              "type": "usesMultiPlatformCommands",
+              "commands": [
+                {
+                  "platform": "windows",
+                  "action": {
+                    "type": "usesTool",
+                    "toolId": "curl",
+                    "withArgs": [
+                      "-LO",
+                      "https://dl.k8s.io/release/{{capture:KUBECTL_CLIENT_VERSION}}/bin/windows/{{capture:PROCESSOR_ARCHITECTURE}}/kubectl.exe"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "menus": [
+    {
+      "fullOption": "-install-kube",
+      "shortOption": "--ik",
+      "description": "Install a version of kubectl",
+      "name": "install-kubectl",
+      "appliesTo": {
+        "type": "appliesToEnvironments",
+        "environments": [
+          "windows-debug"
+        ]
+      },
+      "steps": [
+        {
+          "action": {
+            "type": "usesCommand",
+            "commandId": "download-and-install-kubectl"            
+          }
+        }
+      ]
+    }
+  ],
+  "app": {
+    "name": "Example CLI App",
+    "description": "This is an example of the TinyMenu CLI app",
+    "selectionColor": "Yellow",
+    "defaultColor": "Gray",
+    "selectionScreenHeader": "Please select one of:",
+    "shouldLog": true
+  }
+}

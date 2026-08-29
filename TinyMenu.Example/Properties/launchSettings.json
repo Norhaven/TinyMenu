@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "TinyMenu.Example": {
+      "commandName": "Project",
+      "commandLineArgs": "--ik"
+    }
+  }
+}

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../TinyMenu.Example/TinyMenu.Example.fsproj" />
+  <Project Path="TinyMenu.Core.fsproj" />
+</Solution>

@@ -16,7 +16,13 @@ module CLI =
     open Platforms
 
     type internal App(private config:Config, private rootCommand:RootCommand) =
-        
+        do
+            let app = config.Source.App
+
+            Console.WriteLine(app.Name)
+            Console.WriteLine(app.Description)
+            Console.WriteLine()
+
         static let createCommandFor (config:Config) (menu:Menu) (cancellationToken:CancellationToken) : CommandLine.Command =
         
             let invokableCommands = CommandBuilders.parseMenu config menu |> List.ofSeq
